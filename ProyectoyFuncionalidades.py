@@ -1,153 +1,147 @@
-# ==============================
-# BEAUTY APP - SALÓN DE BELLEZA
-# ==============================
+import tkinter as tk
+from tkinter import messagebox
+import json
+from datetime import datetime
+
+# -------- CONFIG --------
+ARCHIVO = "citas.json"
+
+servicios = {
+    "Corte de cabello": 20,
+    "Manicure": 15,
+    "Pedicure": 18,
+    "Tinte": 40
+}
 
 citas = []
-servicios = ["Corte de cabello", "Manicure", "Pedicure", "Tinte"]
 
+# -------- ARCHIVO --------
+
+def guardar():
+    with open(ARCHIVO, "w") as f:
+        json.dump(citas, f)
+
+def cargar():
+    global citas
+    try:
+        with open(ARCHIVO, "r") as f:
+            citas = json.load(f)
+    except:
+        citas = []
 
 # -------- FUNCIONES --------
 
-def mostrar_servicios():
-    print("\n--- SERVICIOS DISPONIBLES ---")
-    for i, servicio in enumerate(servicios, start=1):
-        print(f"{i}. {servicio}")
+def registrar():
+    nombre = entry_nombre.get()
+    hora = entry_hora.get()
+    servicio = servicio_var.get()
 
-
-def registrar_cita():
-    print("\n--- REGISTRAR CITA ---")
-
-    nombre = input("Nombre del cliente: ").strip()
-    if not nombre:
-        print("❌ El nombre no puede estar vacío\n")
+    if not nombre or not hora:
+        messagebox.showerror("Error", "Complete todos los campos")
         return
 
-    mostrar_servicios()
-
-    try:
-        opcion = int(input("Seleccione servicio: "))
-        if opcion < 1 or opcion > len(servicios):
-            print("❌ Servicio inválido\n")
-            return
-    except ValueError:
-        print("❌ Debe ingresar un número válido\n")
-        return
-
-    hora = input("Ingrese hora (ej: 3pm): ").strip()
-    if not hora:
-        print("❌ La hora no puede estar vacía\n")
-        return
+    fecha = datetime.now().strftime("%d/%m/%Y")
 
     cita = {
         "cliente": nombre,
-        "servicio": servicios[opcion - 1],
+        "servicio": servicio,
+        "precio": servicios[servicio],
         "hora": hora,
+        "fecha": fecha,
         "estado": "Pendiente"
     }
 
     citas.append(cita)
-    print("✅ Cita registrada correctamente\n")
+    guardar()
+    actualizar()
 
+    entry_nombre.delete(0, tk.END)
+    entry_hora.delete(0, tk.END)
 
-def ver_citas():
-    print("\n--- LISTA DE CITAS ---")
+def actualizar():
+    lista.delete(0, tk.END)
+    for c in citas:
+        texto = f"{c['cliente']} | {c['servicio']} | S/ {c['precio']} | {c['hora']} | {c['estado']}"
+        lista.insert(tk.END, texto)
 
-    if not citas:
-        print("❌ No hay citas registradas\n")
-        return
-
-    for i, cita in enumerate(citas, start=1):
-        print(f"""
-Cita {i}
-Cliente: {cita['cliente']}
-Servicio: {cita['servicio']}
-Hora: {cita['hora']}
-Estado: {cita['estado']}
---------------------------""")
-
-
-def atender_cita():
-    print("\n--- ATENDER CITA ---")
-
-    if not citas:
-        print("❌ No hay citas disponibles\n")
-        return
-
-    for i, cita in enumerate(citas, start=1):
-        print(f"{i}. {cita['cliente']} - {cita['estado']}")
-
+def atender():
     try:
-        opcion = int(input("Seleccione cita: "))
-        if opcion < 1 or opcion > len(citas):
-            print("❌ Opción inválida\n")
-            return
-    except ValueError:
-        print("❌ Debe ingresar un número válido\n")
-        return
+        i = lista.curselection()[0]
+        citas[i]["estado"] = "Atendido"
+        guardar()
+        actualizar()
+    except:
+        messagebox.showerror("Error", "Seleccione una cita")
 
-    if citas[opcion - 1]["estado"] == "Atendido":
-        print("⚠️ Esta cita ya fue atendida\n")
-        return
-
-    citas[opcion - 1]["estado"] = "Atendido"
-    print("💇 Cita atendida correctamente\n")
-
-
-def eliminar_cita():
-    print("\n--- ELIMINAR CITA ---")
-
-    if not citas:
-        print("❌ No hay citas\n")
-        return
-
-    for i, cita in enumerate(citas, start=1):
-        print(f"{i}. {cita['cliente']} - {cita['servicio']}")
-
+def eliminar():
     try:
-        opcion = int(input("Seleccione cita a eliminar: "))
-        if opcion < 1 or opcion > len(citas):
-            print("❌ Opción inválida\n")
-            return
-    except ValueError:
-        print("❌ Debe ingresar un número válido\n")
-        return
+        i = lista.curselection()[0]
+        citas.pop(i)
+        guardar()
+        actualizar()
+    except:
+        messagebox.showerror("Error", "Seleccione una cita")
 
-    citas.pop(opcion - 1)
-    print("🗑️ Cita eliminada correctamente\n")
+def buscar():
+    nombre = entry_buscar.get().lower()
+    lista.delete(0, tk.END)
 
+    for c in citas:
+        if nombre in c["cliente"].lower():
+            lista.insert(tk.END, f"{c['cliente']} | {c['servicio']} | {c['hora']}")
 
-# -------- MENÚ PRINCIPAL --------
+def reporte():
+    total = 0
+    hoy = datetime.now().strftime("%d/%m/%Y")
 
-def menu():
-    while True:
-        print("""
-======= BEAUTY APP =======
-1. Registrar cita
-2. Ver citas
-3. Atender cita
-4. Eliminar cita
-5. Salir
-==========================
-""")
+    for c in citas:
+        if c["fecha"] == hoy and c["estado"] == "Atendido":
+            total += c["precio"]
 
-        opcion = input("Seleccione una opción: ").strip()
+    messagebox.showinfo("Reporte Diario", f"Ingresos de hoy: S/ {total}")
 
-        if opcion == "1":
-            registrar_cita()
-        elif opcion == "2":
-            ver_citas()
-        elif opcion == "3":
-            atender_cita()
-        elif opcion == "4":
-            eliminar_cita()
-        elif opcion == "5":
-            print("👋 Saliendo del sistema...")
-            break
-        else:
-            print("❌ Opción inválida\n")
+# -------- INTERFAZ --------
 
+root = tk.Tk()
+root.title("Beauty App PRO")
+root.geometry("600x550")
 
-# -------- EJECUCIÓN --------
+tk.Label(root, text="Nombre").pack()
+entry_nombre = tk.Entry(root)
+entry_nombre.pack()
 
-if __name__ == "__main__":
-    menu()
+tk.Label(root, text="Hora").pack()
+entry_hora = tk.Entry(root)
+entry_hora.pack()
+
+tk.Label(root, text="Servicio").pack()
+servicio_var = tk.StringVar()
+servicio_var.set(list(servicios.keys())[0])
+
+tk.OptionMenu(root, servicio_var, *servicios.keys()).pack()
+
+tk.Button(root, text="Registrar", command=registrar, bg="green", fg="white").pack(pady=5)
+
+# Lista
+lista = tk.Listbox(root, width=80)
+lista.pack(pady=10)
+
+tk.Button(root, text="Atender", command=atender).pack()
+tk.Button(root, text="Eliminar", command=eliminar).pack()
+
+# Buscar
+tk.Label(root, text="Buscar cliente").pack()
+entry_buscar = tk.Entry(root)
+entry_buscar.pack()
+
+tk.Button(root, text="Buscar", command=buscar).pack()
+
+# Reporte
+tk.Button(root, text="Reporte Diario 💰", command=reporte, bg="blue", fg="white").pack(pady=10)
+
+# -------- INICIO --------
+
+cargar()
+actualizar()
+
+root.mainloop()
