@@ -1,104 +1,164 @@
-# PROYECTO: SISTEMA DE CONTROL DE PAGOS - SALON DE BELLEZA (VERSION PRO)
+# SISTEMA PROFESIONAL - SALON DE BELLEZA
+# CONTROL DE PAGOS Y SERVICIOS
 
 from datetime import datetime
 
+# Datos iniciales (SERVICIOS CON PRECIOS)
+servicios = [
+    {"nombre": "Corte de cabello", "precio": 15},
+    {"nombre": "Tinte", "precio": 40},
+    {"nombre": "Manicure", "precio": 20},
+    {"nombre": "Pedicure", "precio": 25},
+    {"nombre": "Peinado", "precio": 30}
+]
+
 clientes = []
-servicios = []
 pagos = []
 
+# FUNCIONES
+def limpiar():
+    print("\n" * 3)
+
+def pausa():
+    input("\nPresiona ENTER para continuar...")
+
 def menu():
-    print("\n=== SALON DE BELLEZA - CONTROL DE PAGOS ===")
+    limpiar()
+    print("======================================")
+    print("   💇‍♀️ SALON DE BELLEZA - SISTEMA")
+    print("======================================")
     print("1. Registrar cliente")
-    print("2. Registrar servicio")
+    print("2. Ver servicios")
     print("3. Registrar pago")
-    print("4. Ver historial de pagos")
-    print("5. Ver resumen general")
+    print("4. Ver historial")
+    print("5. Ver resumen")
     print("6. Salir")
+    print("======================================")
 
 def registrar_cliente():
-    nombre = input("Nombre del cliente: ")
-    clientes.append(nombre)
-    print("✅ Cliente registrado.")
+    limpiar()
+    print("=== REGISTRO DE CLIENTE ===")
+    nombre = input("Ingrese nombre: ").strip()
 
-def registrar_servicio():
-    nombre = input("Nombre del servicio: ")
-    precio = float(input("Precio (S/): "))
-    servicios.append({"nombre": nombre, "precio": precio})
-    print("✅ Servicio registrado.")
+    if nombre == "":
+        print("❌ Nombre inválido")
+    else:
+        clientes.append(nombre)
+        print("✅ Cliente registrado")
 
-def registrar_pago():
-    if not clientes or not servicios:
-        print("⚠️ Debes registrar clientes y servicios primero.")
-        return
+    pausa()
+
+def ver_servicios():
+    limpiar()
+    print("=== LISTA DE SERVICIOS ===")
+    for i, s in enumerate(servicios, 1):
+        print(f"{i}. {s['nombre']} - S/ {s['precio']}")
+    pausa()
+
+def elegir_cliente():
+    if not clientes:
+        print("❌ No hay clientes registrados")
+        pausa()
+        return None
 
     print("\nClientes:")
-    for i, c in enumerate(clientes):
-        print(f"{i+1}. {c}")
-    c_index = int(input("Seleccione cliente: ")) - 1
+    for i, c in enumerate(clientes, 1):
+        print(f"{i}. {c}")
 
+    try:
+        op = int(input("Seleccione cliente: "))
+        return clientes[op - 1]
+    except:
+        print("❌ Selección inválida")
+        pausa()
+        return None
+
+def elegir_servicio():
     print("\nServicios:")
-    for i, s in enumerate(servicios):
-        print(f"{i+1}. {s['nombre']} - S/ {s['precio']}")
-    s_index = int(input("Seleccione servicio: ")) - 1
+    for i, s in enumerate(servicios, 1):
+        print(f"{i}. {s['nombre']} - S/ {s['precio']}")
 
-    cliente = clientes[c_index]
-    servicio = servicios[s_index]["nombre"]
-    precio = servicios[s_index]["precio"]
+    try:
+        op = int(input("Seleccione servicio: "))
+        return servicios[op - 1]
+    except:
+        print("❌ Selección inválida")
+        pausa()
+        return None
 
-    print("\nMétodos de pago:")
+def elegir_metodo():
+    print("\nMétodo de pago:")
     print("1. Efectivo")
     print("2. Yape")
     print("3. Tarjeta")
     print("4. Transferencia")
 
-    metodo_op = input("Seleccione método de pago: ")
+    opciones = {
+        "1": "Efectivo",
+        "2": "Yape",
+        "3": "Tarjeta",
+        "4": "Transferencia"
+    }
 
-    if metodo_op == "1":
-        metodo = "Efectivo"
-    elif metodo_op == "2":
-        metodo = "Yape"
-    elif metodo_op == "3":
-        metodo = "Tarjeta"
-    elif metodo_op == "4":
-        metodo = "Transferencia"
-    else:
-        metodo = "Desconocido"
+    op = input("Seleccione: ")
+    return opciones.get(op, "Desconocido")
 
+def registrar_pago():
+    limpiar()
+    print("=== REGISTRO DE PAGO ===")
+
+    cliente = elegir_cliente()
+    if not cliente:
+        return
+
+    servicio = elegir_servicio()
+    if not servicio:
+        return
+
+    metodo = elegir_metodo()
     fecha = datetime.now().strftime("%d/%m/%Y %H:%M")
 
     pagos.append({
         "cliente": cliente,
-        "servicio": servicio,
-        "precio": precio,
+        "servicio": servicio["nombre"],
+        "precio": servicio["precio"],
         "metodo": metodo,
         "fecha": fecha
     })
 
-    print("✅ Pago registrado correctamente.")
+    print("\n✅ Pago registrado correctamente")
+    pausa()
 
-def ver_pagos():
-    print("\n=== HISTORIAL DE PAGOS ===")
-    for p in pagos:
-        print(f"{p['fecha']} | {p['cliente']} | {p['servicio']} | S/ {p['precio']} | {p['metodo']}")
+def ver_historial():
+    limpiar()
+    print("=== HISTORIAL DE PAGOS ===")
+
+    if not pagos:
+        print("No hay pagos registrados")
+    else:
+        for p in pagos:
+            print(f"{p['fecha']} | {p['cliente']} | {p['servicio']} | S/ {p['precio']} | {p['metodo']}")
+
+    pausa()
 
 def resumen():
+    limpiar()
+    print("=== RESUMEN GENERAL ===")
+
     total = sum(p["precio"] for p in pagos)
+
+    print(f"Clientes registrados: {len(clientes)}")
+    print(f"Total ingresos: S/ {total}")
 
     metodos = {}
     for p in pagos:
-        if p["metodo"] in metodos:
-            metodos[p["metodo"]] += p["precio"]
-        else:
-            metodos[p["metodo"]] = p["precio"]
+        metodos[p["metodo"]] = metodos.get(p["metodo"], 0) + p["precio"]
 
-    print("\n=== RESUMEN GENERAL ===")
-    print(f"Total de clientes: {len(clientes)}")
-    print(f"Total de servicios: {len(servicios)}")
-    print(f"Total de ingresos: S/ {total}")
+    print("\nIngresos por método:")
+    for m, v in metodos.items():
+        print(f"{m}: S/ {v}")
 
-    print("\nIngresos por método de pago:")
-    for m, monto in metodos.items():
-        print(f"{m}: S/ {monto}")
+    pausa()
 
 # PROGRAMA PRINCIPAL
 while True:
@@ -108,15 +168,16 @@ while True:
     if opcion == "1":
         registrar_cliente()
     elif opcion == "2":
-        registrar_servicio()
+        ver_servicios()
     elif opcion == "3":
         registrar_pago()
     elif opcion == "4":
-        ver_pagos()
+        ver_historial()
     elif opcion == "5":
         resumen()
     elif opcion == "6":
-        print("👋 Sistema cerrado.")
+        print("\n👋 Gracias por usar el sistema")
         break
     else:
-        print("❌ Opción inválida.")
+        print("❌ Opción inválida")
+        pausa()
