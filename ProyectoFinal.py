@@ -1,143 +1,122 @@
-# Sistema de Delivery - FastDelivery App
+# PROYECTO: SISTEMA DE CONTROL DE PAGOS - SALON DE BELLEZA (VERSION PRO)
 
-pedidos = []
-repartidores = ["Juan", "Carlos", "Luis"]
+from datetime import datetime
 
-def registrar_pedido():
-    print("\n--- REGISTRAR PEDIDO ---")
-    nombre = input("Nombre del cliente: ").strip()
-    producto = input("Producto a pedir: ").strip()
-    direccion = input("Dirección: ").strip()
-
-    if not nombre or not producto or not direccion:
-        print("❌ Todos los campos son obligatorios\n")
-        return
-
-    pedido = {
-        "cliente": nombre,
-        "producto": producto,
-        "direccion": direccion,
-        "estado": "Pendiente",
-        "repartidor": None
-    }
-
-    pedidos.append(pedido)
-    print("✅ Pedido registrado correctamente\n")
-
-
-def asignar_repartidor():
-    print("\n--- ASIGNAR REPARTIDOR ---")
-
-    if not pedidos:
-        print("❌ No hay pedidos\n")
-        return
-
-    for i, p in enumerate(pedidos):
-        print(f"{i+1}. {p['cliente']} - {p['producto']} (Estado: {p['estado']})")
-
-    try:
-        opcion = int(input("Seleccione pedido: ")) - 1
-        if opcion < 0 or opcion >= len(pedidos):
-            print("❌ Opción inválida\n")
-            return
-    except:
-        print("❌ Debe ingresar un número\n")
-        return
-
-    if pedidos[opcion]["estado"] != "Pendiente":
-        print("⚠️ Este pedido ya fue asignado o entregado\n")
-        return
-
-    for i, r in enumerate(repartidores):
-        print(f"{i+1}. {r}")
-
-    try:
-        rep = int(input("Seleccione repartidor: ")) - 1
-        if rep < 0 or rep >= len(repartidores):
-            print("❌ Repartidor inválido\n")
-            return
-    except:
-        print("❌ Debe ingresar un número\n")
-        return
-
-    pedidos[opcion]["repartidor"] = repartidores[rep]
-    pedidos[opcion]["estado"] = "En camino"
-
-    print("🚚 Repartidor asignado correctamente\n")
-
-
-def entregar_pedido():
-    print("\n--- ENTREGAR PEDIDO ---")
-
-    if not pedidos:
-        print("❌ No hay pedidos\n")
-        return
-
-    for i, p in enumerate(pedidos):
-        print(f"{i+1}. {p['cliente']} - {p['estado']}")
-
-    try:
-        opcion = int(input("Seleccione pedido a entregar: ")) - 1
-        if opcion < 0 or opcion >= len(pedidos):
-            print("❌ Opción inválida\n")
-            return
-    except:
-        print("❌ Debe ingresar un número\n")
-        return
-
-    if pedidos[opcion]["estado"] != "En camino":
-        print("⚠️ Solo se pueden entregar pedidos en camino\n")
-        return
-
-    pedidos[opcion]["estado"] = "Entregado"
-    print("📦 Pedido entregado\n")
-
-
-def ver_pedidos():
-    print("\n--- LISTA DE PEDIDOS ---")
-
-    if not pedidos:
-        print("❌ No hay pedidos\n")
-        return
-
-    for i, p in enumerate(pedidos):
-        print(f"""
-Pedido {i+1}
-Cliente: {p['cliente']}
-Producto: {p['producto']}
-Dirección: {p['direccion']}
-Estado: {p['estado']}
-Repartidor: {p['repartidor']}
----------------------------""")
-
+clientes = []
+servicios = []
+pagos = []
 
 def menu():
-    while True:
-        print("""
-=== FAST DELIVERY APP ===
-1. Registrar pedido
-2. Asignar repartidor
-3. Entregar pedido
-4. Ver pedidos
-5. Salir
-""")
+    print("\n=== SALON DE BELLEZA - CONTROL DE PAGOS ===")
+    print("1. Registrar cliente")
+    print("2. Registrar servicio")
+    print("3. Registrar pago")
+    print("4. Ver historial de pagos")
+    print("5. Ver resumen general")
+    print("6. Salir")
 
-        opcion = input("Seleccione una opción: ").strip()
+def registrar_cliente():
+    nombre = input("Nombre del cliente: ")
+    clientes.append(nombre)
+    print("✅ Cliente registrado.")
 
-        if opcion == "1":
-            registrar_pedido()
-        elif opcion == "2":
-            asignar_repartidor()
-        elif opcion == "3":
-            entregar_pedido()
-        elif opcion == "4":
-            ver_pedidos()
-        elif opcion == "5":
-            print("👋 Saliendo del sistema...")
-            break
+def registrar_servicio():
+    nombre = input("Nombre del servicio: ")
+    precio = float(input("Precio (S/): "))
+    servicios.append({"nombre": nombre, "precio": precio})
+    print("✅ Servicio registrado.")
+
+def registrar_pago():
+    if not clientes or not servicios:
+        print("⚠️ Debes registrar clientes y servicios primero.")
+        return
+
+    print("\nClientes:")
+    for i, c in enumerate(clientes):
+        print(f"{i+1}. {c}")
+    c_index = int(input("Seleccione cliente: ")) - 1
+
+    print("\nServicios:")
+    for i, s in enumerate(servicios):
+        print(f"{i+1}. {s['nombre']} - S/ {s['precio']}")
+    s_index = int(input("Seleccione servicio: ")) - 1
+
+    cliente = clientes[c_index]
+    servicio = servicios[s_index]["nombre"]
+    precio = servicios[s_index]["precio"]
+
+    print("\nMétodos de pago:")
+    print("1. Efectivo")
+    print("2. Yape")
+    print("3. Tarjeta")
+    print("4. Transferencia")
+
+    metodo_op = input("Seleccione método de pago: ")
+
+    if metodo_op == "1":
+        metodo = "Efectivo"
+    elif metodo_op == "2":
+        metodo = "Yape"
+    elif metodo_op == "3":
+        metodo = "Tarjeta"
+    elif metodo_op == "4":
+        metodo = "Transferencia"
+    else:
+        metodo = "Desconocido"
+
+    fecha = datetime.now().strftime("%d/%m/%Y %H:%M")
+
+    pagos.append({
+        "cliente": cliente,
+        "servicio": servicio,
+        "precio": precio,
+        "metodo": metodo,
+        "fecha": fecha
+    })
+
+    print("✅ Pago registrado correctamente.")
+
+def ver_pagos():
+    print("\n=== HISTORIAL DE PAGOS ===")
+    for p in pagos:
+        print(f"{p['fecha']} | {p['cliente']} | {p['servicio']} | S/ {p['precio']} | {p['metodo']}")
+
+def resumen():
+    total = sum(p["precio"] for p in pagos)
+
+    metodos = {}
+    for p in pagos:
+        if p["metodo"] in metodos:
+            metodos[p["metodo"]] += p["precio"]
         else:
-            print("❌ Opción inválida\n")
+            metodos[p["metodo"]] = p["precio"]
 
+    print("\n=== RESUMEN GENERAL ===")
+    print(f"Total de clientes: {len(clientes)}")
+    print(f"Total de servicios: {len(servicios)}")
+    print(f"Total de ingresos: S/ {total}")
 
-# Ejecutar programa
-menu()
+    print("\nIngresos por método de pago:")
+    for m, monto in metodos.items():
+        print(f"{m}: S/ {monto}")
+
+# PROGRAMA PRINCIPAL
+while True:
+    menu()
+    opcion = input("Seleccione una opción: ")
+
+    if opcion == "1":
+        registrar_cliente()
+    elif opcion == "2":
+        registrar_servicio()
+    elif opcion == "3":
+        registrar_pago()
+    elif opcion == "4":
+        ver_pagos()
+    elif opcion == "5":
+        resumen()
+    elif opcion == "6":
+        print("👋 Sistema cerrado.")
+        break
+    else:
+        print("❌ Opción inválida.")
