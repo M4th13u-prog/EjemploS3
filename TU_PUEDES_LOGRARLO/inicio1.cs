@@ -5,7 +5,7 @@ int edad = 25;
 bool activo = true;
 DateTime fecha = DateTime.Now;
 float precio = 19.99f;
-var loquesea = "Esto es una variable de tipo var";
+var loquesea = "Esto es una variable de tipo var";          
 decimal descuento = 0.1m;
 Console.WriteLine(nombre);
 Console.WriteLine(edad);
